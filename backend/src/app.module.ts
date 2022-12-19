@@ -1,8 +1,10 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { UserModule } from './module/user.module';
+import { ProductModule } from './module/product.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -22,8 +24,11 @@ import configuration from './config/configuration';
       },
       inject: [ConfigService],
     }),
+    CacheModule.register({ isGlobal: true, ttl: Number.MAX_SAFE_INTEGER }),
+    UserModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

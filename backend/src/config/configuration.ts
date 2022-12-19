@@ -1,14 +1,10 @@
 import { Configuration } from "@/entities/shared/configuration.interface"
 import { Builder } from "builder-pattern"
 
-const MONGO_USERNAME = process.env.MONGO_USERNAME || ''
-const MONGO_PASSWORD = process.env.MONGO_PASSWORD || ''
-const MONGO_URL = `mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@cluster0.us0aqfp.mongodb.net/shop?retryWrites=true&w=majority`
-
 export default () =>
   Builder<Configuration.Configure>()
     .database({
-      mongoUrl: MONGO_URL,
+      mongoUrl: process.env.MONGO_URL,
       mongoDbs: process.env.MONGO_DBS || "ant-man",
     })
     .security({

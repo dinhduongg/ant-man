@@ -1,4 +1,5 @@
-import { Property } from '@mikro-orm/core'
+import { PrimaryKey, Property } from '@mikro-orm/core'
+import { v4 as uuidv4 } from 'uuid'
 
 export class Base {
 
@@ -8,10 +9,23 @@ export class Base {
     @Property({ onUpdate: () => new Date() })
     updatedAt: Date;
 
-    @Property()
-    createdBy: string;
+    // @Property()
+    // createdBy: string;
 
-    @Property()
-    updatedBy: string;
+    // @Property()
+    // updatedBy: string;
+
+}
+
+export class SnowflakeBase {
+
+    @PrimaryKey({ type: String, fieldName: '_id', onCreate: () => uuidv4() })
+    id: string
+
+    @Property({ onCreate: () => new Date() })
+    createdAt: Date
+
+    @Property({ onUpdate: () => new Date(), onCreate: () => new Date() })
+    updatedAt: Date
 
 }

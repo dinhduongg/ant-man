@@ -1,16 +1,16 @@
-import { Entity, Property } from '@mikro-orm/core'
-import { User as IUser } from './shared/account.interface'
-import { AuthorityRole } from './shared/enums'
-import { Base } from './support/base.entity'
+import { Entity, Property, PrimaryKey } from '@mikro-orm/core'
+import { User as IUser } from '@/entities/shared/account.interface'
+import { AuthorityRole } from '@/entities/shared/enums'
+import { Base } from '@/entities/support/base.entity'
 
-@Entity({ collection: 'user' })
+@Entity({ collection: 'users' })
 export class User extends Base implements IUser {
     // authentication
-    @Property() username: string
+    @PrimaryKey({ fieldName: '_id' }) username: string
     @Property() password: string
     @Property() email: string
-    @Property() phone: number
-    @Property() fullname?: string
+    @Property() phone: string
+    @Property() fullname: string
     @Property() authorities: AuthorityRole[]
     @Property() authority: AuthorityRole
 
