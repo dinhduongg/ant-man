@@ -25,6 +25,17 @@ export class UserService {
     protected readonly _cache: Cache,
   ) { }
 
+  async findAll(): Promise<UserDTO[]> {
+    const users = await this.repository.find({})
+    return users.map((user) => this.mapper.toDTO(user))
+  }
+
+  async findOne(username: string): Promise<UserDTO> {
+    const user = await this.repository.findOne({ username: username })
+    if (!user) throw new HttpException(`Không tìm thấy người dùng ${username}`, HttpStatus.BAD_REQUEST)
+    return this.mapper.toDTO(user)
+  }
+
   async create(dto: UserDTO): Promise<UserDTO | any> {
     try {
       const checkUser = await this.repository.findOne({ username: dto.username })
@@ -38,17 +49,6 @@ export class UserService {
     } catch (error) {
       console.log(error)
     }
-  }
-
-  async findAll(): Promise<UserDTO[]> {
-    const users = await this.repository.find({})
-    return users.map((user) => this.mapper.toDTO(user))
-  }
-
-  async findOne(username: string): Promise<UserDTO> {
-    const user = await this.repository.findOne({ username: username })
-    if (!user) throw new HttpException(`Không tìm thấy người dùng ${username}`, HttpStatus.BAD_REQUEST)
-    return this.mapper.toDTO(user)
   }
 
   async update(username: string, dto: UserDTO): Promise<UserDTO> {

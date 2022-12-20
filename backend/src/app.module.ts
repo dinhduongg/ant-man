@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './module/user.module';
 import { ProductModule } from './module/product.module';
+import { CartModule } from './module/cart.module';
+import { OrderModule } from './module/order.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -27,6 +29,8 @@ import configuration from './config/configuration';
     CacheModule.register({ isGlobal: true, ttl: Number.MAX_SAFE_INTEGER }),
     UserModule,
     ProductModule,
+    CartModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [AppService],

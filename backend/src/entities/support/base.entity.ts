@@ -6,7 +6,7 @@ export class Base {
     @Property({ onCreate: () => new Date() })
     createdAt: Date;
 
-    @Property({ onUpdate: () => new Date() })
+    @Property({ onUpdate: () => new Date(), onCreate: () => new Date() })
     updatedAt: Date;
 
     // @Property()
