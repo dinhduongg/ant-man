@@ -3,6 +3,7 @@ import { productCart } from '@/entities/shared/cart.interface'
 import { Order as IOrder, paymentResult } from '@/entities/shared/order.interface'
 
 export class OrderDTO implements IOrder {
+    id: string
     user: Pick<User, 'username' | 'email' | 'fullname' | 'phone'>
     orderItem: productCart[]
     shippingAddress: Address

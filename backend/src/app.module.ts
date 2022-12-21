@@ -7,6 +7,7 @@ import { UserModule } from './module/user.module';
 import { ProductModule } from './module/product.module';
 import { CartModule } from './module/cart.module';
 import { OrderModule } from './module/order.module';
+import { ReviewModule } from './module/review.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -31,6 +32,7 @@ import configuration from './config/configuration';
     ProductModule,
     CartModule,
     OrderModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [AppService],

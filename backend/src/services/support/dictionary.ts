@@ -1,5 +1,6 @@
 import { Cart } from "@/entities/cart.entity"
 import { Order } from "@/entities/order.entity"
+import { Review } from "@/entities/review.entity"
 import { AuthorityRole } from "@/entities/shared/enums"
 import { User } from "@/entities/user.entity"
 import { Builder } from "builder-pattern"
@@ -55,4 +56,11 @@ export const generalOrderTemplate = Builder(Order)
     .isDelivered(false)
     .paidAt(new Date())
     .deliveredAt(new Date())
+    .build()
+
+export const generalReviewTemplate = Builder(Review)
+    .username('')
+    .productId('')
+    .rating(0)
+    .comment('')
     .build()

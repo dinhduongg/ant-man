@@ -32,8 +32,8 @@ async function bootstrap() {
 
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
-  app.use(json({limit: '50mb'}));
-  app.use(urlencoded({limit: '50mb'}));
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ limit: '50mb' }));
   await app.listen(Number.parseInt(port))
 }
 bootstrap();

@@ -7,6 +7,7 @@ import { Order } from '@/entities/order.entity'
 export class OrderMapper {
     toDTO(source: Order): OrderDTO {
         return Builder(OrderDTO)
+            .id(source.id)
             .user(source.user)
             .orderItem(source.orderItem)
             .shippingAddress(source.shippingAddress)
@@ -24,6 +25,7 @@ export class OrderMapper {
 
     toEntity(source: Partial<OrderDTO>): Order {
         return Builder(Order)
+            .id(source.id)
             .user(source.user)
             .orderItem(source.orderItem)
             .shippingAddress(source.shippingAddress)
