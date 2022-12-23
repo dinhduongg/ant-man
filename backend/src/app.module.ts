@@ -8,6 +8,7 @@ import { ProductModule } from './module/product.module';
 import { CartModule } from './module/cart.module';
 import { OrderModule } from './module/order.module';
 import { ReviewModule } from './module/review.module';
+import { AuthModule } from './module/auth.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -33,6 +34,7 @@ import configuration from './config/configuration';
     CartModule,
     OrderModule,
     ReviewModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

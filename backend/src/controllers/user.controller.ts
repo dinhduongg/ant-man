@@ -1,20 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common'
 import { UserService } from '../services/user.service'
 import { UserDTO } from '@/services/dto/user.dto';
+import { JwtAuthGuard, Roles, RolesGuard } from '@/authentication';
+import { AuthorityRole } from '@/entities/shared/enums';
 
 @Controller('users')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
   constructor(private readonly userService: UserService) { }
 
   @Get()
+  @Roles(AuthorityRole.ADMIN, AuthorityRole.MANAGER)
   findAll() {
     return this.userService.findAll();
   }
 
-  @Post('create')
-  create(@Body() dto: UserDTO): Promise<UserDTO> {
-    return this.userService.create(dto);
-  }
+  // @Post('create')
+  // @Roles(AuthorityRole.ADMIN, AuthorityRole.MANAGER)
+  // create(@Body() dto: UserDTO): Promise<UserDTO> {
+  //   return this.userService.create(dto);
+  // }
 
   @Get(':username')
   findOne(@Param('username') username: string): Promise<UserDTO> {
@@ -32,6 +37,7 @@ export class UserController {
   }
 
   @Delete('delete/:username')
+  @Roles(AuthorityRole.ADMIN, AuthorityRole.MANAGER)
   remove(@Param('username') username: string) {
     return this.userService.remove(username);
   }

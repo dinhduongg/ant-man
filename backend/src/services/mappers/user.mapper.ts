@@ -9,7 +9,7 @@ export class UserMapper {
     toDTO(source: User): UserDTO {
         return Builder(UserDTO)
             .username(source.username)
-            .password(hashSync(source.password, 10))
+            .password(source.password)
             .email(source.email)
             .phone(source.phone)
             .fullname(source.fullname)
@@ -29,7 +29,7 @@ export class UserMapper {
     toEntity(source: Partial<UserDTO>): User {
         return Builder(User)
             .username(source.username)
-            .password(hashSync(source.password, 10))
+            .password(source.password)
             .email(source.email)
             .phone(source.phone)
             .fullname(source.fullname)

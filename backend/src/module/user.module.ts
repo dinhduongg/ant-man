@@ -8,6 +8,7 @@ import { UserService } from '../services/user.service';
 @Module({
   imports: [MikroOrmModule.forFeature([User])],
   controllers: [UserController],
-  providers: [UserService, UserMapper]
+  providers: [UserService, UserMapper],
+  exports: [UserService]
 })
 export class UserModule { }

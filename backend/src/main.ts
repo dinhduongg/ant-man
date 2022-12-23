@@ -3,6 +3,7 @@ import { AppModule } from './app.module'
 import { Logger } from '@nestjs/common'
 import { json, urlencoded } from 'express'
 import { AllExceptionsFilter } from '@/support/http-exception.filter'
+import * as cookieParser from 'cookie-parser'
 
 async function bootstrap() {
   const port = process.env.NEST_LISTEN_PORT || '3030'
@@ -34,6 +35,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ limit: '50mb' }));
+  app.use(cookieParser())
   await app.listen(Number.parseInt(port))
 }
 bootstrap();

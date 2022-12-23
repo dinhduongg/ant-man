@@ -1,5 +1,11 @@
 import { AuthorityRole } from "../shared/enums"
 
+export interface registerData {
+    username: string
+    password: string
+    confirmPassword: string
+}
+
 export interface Address {
     city?: string,
     street?: string

@@ -53,11 +53,15 @@ export class ProductService {
   }
 
   async update(id: string, dto: ProductDTO): Promise<ProductDTO> {
-    const product = await this.repository.findOne({ id })
-    if (!product) throw new HttpException('Không tìm thấy sản phẩm', HttpStatus.BAD_REQUEST)
-    wrap(product).assign(dto)
-    await this.repository.flush()
-    return this.mapper.toDTO(product)
+    try {
+      const product = await this.repository.findOne({ id })
+      if (!product) throw new HttpException('Không tìm thấy sản phẩm', HttpStatus.BAD_REQUEST)
+      wrap(product).assign(dto)
+      await this.repository.flush()
+      return this.mapper.toDTO(product)
+    } catch (error) {
+      throw error
+    }
   }
 
   async remove(id: string) {

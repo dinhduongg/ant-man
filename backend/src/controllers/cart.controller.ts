@@ -1,10 +1,12 @@
 import { productCart } from '@/entities/shared/cart.interface';
-import { cartType } from '@/entities/shared/enums';
+import { AuthorityRole, cartType } from '@/entities/shared/enums';
 import { CartDTO } from '@/services/dto/cart.dto';
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { CartService } from '../services/cart.service';
+import { JwtAuthGuard, RolesGuard, Roles } from '@/authentication'
 
 @Controller('carts')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CartController {
   constructor(private readonly cartService: CartService) { }
 
@@ -13,14 +15,14 @@ export class CartController {
     return this.cartService.findAll();
   }
 
-  @Post('create/:username')
-  create(@Body() dto: productCart, @Param('username') username: string): Promise<CartDTO> {
-    return this.cartService.create(dto, username);
-  }
-
   @Get(':username')
   findOne(@Param('username') username: string): Promise<CartDTO> {
     return this.cartService.findOne(username);
+  }
+
+  @Post('create/:username')
+  create(@Body() dto: productCart, @Param('username') username: string): Promise<CartDTO> {
+    return this.cartService.create(dto, username);
   }
 
   @Patch(':username/:type')

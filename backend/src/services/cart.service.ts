@@ -34,84 +34,96 @@ export class CartService {
   }
 
   async create(dto: productCart, username: string): Promise<CartDTO> {
-    const user = await this.em.findOne(User, { username })
-    if (!user) throw new HttpException(`Người dùng ${username} không tồn tại`, HttpStatus.BAD_REQUEST)
+    try {
+      const user = await this.em.findOne(User, { username })
+      if (!user) throw new HttpException(`Người dùng ${username} không tồn tại`, HttpStatus.BAD_REQUEST)
 
-    const product = await this.em.findOne(Product, { id: dto.id })
-    if (!product) throw new HttpException("Sản phẩm không tồn tại!", HttpStatus.BAD_REQUEST)
+      const product = await this.em.findOne(Product, { id: dto.id })
+      if (!product) throw new HttpException("Sản phẩm không tồn tại!", HttpStatus.BAD_REQUEST)
 
-    const userCart = await this.repository.findOne({ username })
-    dto.totalMoney = dto.quantity * dto.price
+      const userCart = await this.repository.findOne({ username })
+      dto.totalMoney = dto.quantity * dto.price
 
-    if (userCart) {
-      const isExistProduct = userCart.products.find(item => item.id === dto.id)
-      if (isExistProduct) {
-        isExistProduct.quantity += dto.quantity
-        isExistProduct.totalMoney = isExistProduct.quantity * isExistProduct.price
+      if (userCart) {
+        const isExistProduct = userCart.products.find(item => item.id === dto.id)
+        if (isExistProduct) {
+          isExistProduct.quantity += dto.quantity
+          isExistProduct.totalMoney = isExistProduct.quantity * isExistProduct.price
 
+          userCart.totalQuantity += dto.quantity
+          userCart.totalPrice += dto.totalMoney
+
+          await this.repository.flush()
+          return this.mapper.toDTO(userCart)
+        } else {
+          userCart.username = username
+          userCart.products.push(dto)
+          userCart.totalPrice += dto.totalMoney
+          userCart.totalQuantity += dto.quantity
+
+          await this.repository.flush()
+          return this.mapper.toDTO(userCart)
+        }
+      }
+
+      const cart = this.repository.create(cloneDeep(generalCartTemplate))
+      cart.username = username
+      cart.products.push(dto)
+      cart.totalPrice += dto.totalMoney
+      cart.totalQuantity += dto.quantity
+
+      await this.repository.flush()
+      return this.mapper.toDTO(cart)
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async findOne(username: string): Promise<CartDTO> {
+    try {
+      const cart = await this.repository.findOne({ username })
+      return this.mapper.toDTO(cart)
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async update(username: string, type: cartType, dto: productCart) {
+    try {
+      const user = await this.em.findOne(User, { username })
+      if (!user) throw new HttpException(`Người dùng ${username} không tồn tại`, HttpStatus.BAD_REQUEST)
+
+      const product = await this.em.findOne(Product, { id: dto.id })
+      if (!product) throw new HttpException("Sản phẩm không tồn tại!", HttpStatus.BAD_REQUEST)
+
+      const userCart = await this.repository.findOne({ username })
+      if (!userCart) throw new HttpException("Giỏ hàng của bạn không tồn tại!", HttpStatus.BAD_REQUEST)
+
+      dto.totalMoney = dto.quantity * dto.price
+
+      if (type === cartType.increase) {
+        const product = userCart.products.find(item => item.id === dto.id)
+        product.quantity += dto.quantity
+        product.totalMoney += (dto.quantity * dto.price)
+
+        userCart.totalPrice += (dto.price * dto.quantity)
         userCart.totalQuantity += dto.quantity
-        userCart.totalPrice += dto.totalMoney
 
         await this.repository.flush()
         return this.mapper.toDTO(userCart)
       } else {
-        userCart.username = username
-        userCart.products.push(dto)
-        userCart.totalPrice += dto.totalMoney
-        userCart.totalQuantity += dto.quantity
+        const product = userCart.products.find(item => item.id === dto.id)
+        product.quantity -= dto.quantity
+        product.totalMoney -= (dto.quantity * dto.price)
+
+        userCart.totalPrice -= (dto.price * dto.quantity)
+        userCart.totalQuantity -= dto.quantity
 
         await this.repository.flush()
         return this.mapper.toDTO(userCart)
       }
-    }
-
-    const cart = this.repository.create(cloneDeep(generalCartTemplate))
-    cart.username = username
-    cart.products.push(dto)
-    cart.totalPrice += dto.totalMoney
-    cart.totalQuantity += dto.quantity
-
-    await this.repository.flush()
-    return this.mapper.toDTO(cart)
-  }
-
-  async findOne(username: string): Promise<CartDTO> {
-    const cart = await this.repository.findOne({ username })
-    return this.mapper.toDTO(cart)
-  }
-
-  async update(username: string, type: cartType, dto: productCart) {
-    const user = await this.em.findOne(User, { username })
-    if (!user) throw new HttpException(`Người dùng ${username} không tồn tại`, HttpStatus.BAD_REQUEST)
-
-    const product = await this.em.findOne(Product, { id: dto.id })
-    if (!product) throw new HttpException("Sản phẩm không tồn tại!", HttpStatus.BAD_REQUEST)
-
-    const userCart = await this.repository.findOne({ username })
-    if (!userCart) throw new HttpException("Giỏ hàng của bạn không tồn tại!", HttpStatus.BAD_REQUEST)
-
-    dto.totalMoney = dto.quantity * dto.price
-
-    if (type === cartType.increase) {
-      const product = userCart.products.find(item => item.id === dto.id)
-      product.quantity += dto.quantity
-      product.totalMoney += (dto.quantity * dto.price)
-
-      userCart.totalPrice += (dto.price * dto.quantity)
-      userCart.totalQuantity += dto.quantity
-
-      await this.repository.flush()
-      return this.mapper.toDTO(userCart)
-    } else {
-      const product = userCart.products.find(item => item.id === dto.id)
-      product.quantity -= dto.quantity
-      product.totalMoney -= (dto.quantity * dto.price)
-
-      userCart.totalPrice -= (dto.price * dto.quantity)
-      userCart.totalQuantity -= dto.quantity
-
-      await this.repository.flush()
-      return this.mapper.toDTO(userCart)
+    } catch (error) {
+      throw error
     }
   }
 

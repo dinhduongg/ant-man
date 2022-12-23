@@ -11,6 +11,7 @@ import { generalUserTemplate } from './support/dictionary'
 import { HttpException } from '@nestjs/common/exceptions'
 import { HttpStatus } from '@nestjs/common/enums'
 import { wrap } from '@mikro-orm/core'
+import { registerData } from '@/entities/shared/account.interface'
 
 @Injectable()
 export class UserService {
@@ -26,54 +27,79 @@ export class UserService {
   ) { }
 
   async findAll(): Promise<UserDTO[]> {
-    const users = await this.repository.find({})
-    return users.map((user) => this.mapper.toDTO(user))
+    try {
+      const users = await this.repository.find({})
+      return users.map((user) => this.mapper.toDTO(user))
+    } catch (error) {
+      throw error
+    }
   }
 
   async findOne(username: string): Promise<UserDTO> {
-    const user = await this.repository.findOne({ username: username })
-    if (!user) throw new HttpException(`Không tìm thấy người dùng ${username}`, HttpStatus.BAD_REQUEST)
-    return this.mapper.toDTO(user)
+    try {
+      const user = await this.repository.findOne({ username: username })
+      if (!user) throw new HttpException(`Không tìm thấy người dùng ${username}`, HttpStatus.BAD_REQUEST)
+      return this.mapper.toDTO(user)
+    } catch (error) {
+      throw error
+    }
   }
 
-  async create(dto: UserDTO): Promise<UserDTO | any> {
+  async create(dto: registerData): Promise<UserDTO | any> {
     try {
+      if (dto.password !== dto.confirmPassword) throw new HttpException('Mật khẩu không khớp', HttpStatus.UNPROCESSABLE_ENTITY)
+
       const checkUser = await this.repository.findOne({ username: dto.username })
       if (checkUser) throw new HttpException('Tên đăng nhập đã tồn tại', HttpStatus.UNPROCESSABLE_ENTITY)
+
       const user = this.repository.create(cloneDeep(generalUserTemplate))
       user.username = dto.username
       user.password = await hash(dto.password, 10)
 
       await this.repository.persistAndFlush(user)
-      return this.mapper.toDTO(user)
+      throw new HttpException('Đăng ký thành công', HttpStatus.CREATED)
     } catch (error) {
       console.log(error)
     }
   }
 
   async update(username: string, dto: UserDTO): Promise<UserDTO> {
-    const user = await this.repository.findOne({ username: username })
-    if (!user) throw new HttpException(`Không tìm thấy người dùng ${username}`, HttpStatus.BAD_REQUEST)
-    wrap(user).assign(dto)
-    await this.repository.flush()
-    return userMapper.e2d(user)
+    try {
+      const user = await this.repository.findOne({ username: username })
+      if (!user) throw new HttpException(`Không tìm thấy người dùng ${username}`, HttpStatus.BAD_REQUEST)
+      wrap(user).assign(dto)
+      await this.repository.flush()
+      return userMapper.e2d(user)
+    } catch (error) {
+      throw error
+    }
   }
 
   async resetPassword(username: string, action: string, dto: Pick<UserDTO, 'password'>): Promise<UserDTO> {
-    const user = await this.repository.findOne({ username })
-    if (!user) throw new HttpException(`Không tìm thấy người dùng ${username}`, HttpStatus.BAD_REQUEST)
+    try {
+      const user = await this.repository.findOne({ username })
+      if (!user) throw new HttpException(`Không tìm thấy người dùng ${username}`, HttpStatus.BAD_REQUEST)
 
-    if (action === 'change') {
-      user.password = await hash(dto.password, 10)
-    } else { // reset
-      user.password = await hash(user.username, 10)
+      if (action === 'change') {
+        user.password = await hash(dto.password, 10)
+      }
+
+      if (action === 'reset') { // reset
+        user.password = await hash(user.username, 10)
+      }
+
+      await this.repository.persistAndFlush(user)
+      return this.mapper.toDTO(user)
+    } catch (error) {
+      throw error
     }
-
-    await this.repository.flush()
-    return this.mapper.toDTO(user)
   }
 
   async remove(username: string) {
-    return await this.repository.nativeDelete({ username })
+    try {
+      return await this.repository.nativeDelete({ username })
+    } catch (error) {
+      throw error
+    }
   }
 }
