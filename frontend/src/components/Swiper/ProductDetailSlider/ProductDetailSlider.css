@@ -1,0 +1,71 @@
+.product-images-slider {
+  position: relative;
+}
+
+.product-images-slider:hover .nav-btn {
+  padding: 0 20px;
+  opacity: 1;
+}
+
+.product-images-slider .swiper-slide {
+  padding-top: 50%;
+  overflow: hidden;
+  position: relative;
+}
+
+.product-images-slider .swiper-slide img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.product-images-slider .swiper-button-prev {
+  left: 0;
+  color: #000;
+}
+
+.product-images-slider .swiper-button-next {
+  right: 0;
+  color: #000;
+}
+
+.product-images-slider-thumbs {
+  height: 20%;
+  margin: 10px 0;
+}
+
+.product-images-slider-thumbs-wrapper {
+  width: 100%;
+  padding-top: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.product-images-slider-thumbs-wrapper img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.product-images-slider-thumbs .swiper-slide {
+  height: auto;
+  cursor: pointer;
+  opacity: 0.4;
+}
+
+.product-images-slider-thumbs .swiper-slide-thumb-active {
+  opacity: 1;
+}
+
+/* @keyframes swipeIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(40px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+} */

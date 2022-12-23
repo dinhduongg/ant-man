@@ -1,0 +1,37 @@
+.input {
+  transition: border 0.2s ease-in-out;
+}
+
+.input:focus ~ .label,
+.input:active ~ .label,
+.input.filled ~ .label {
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.2s ease-out;
+  top: 0;
+  background-color: #fff;
+  color: #c89979;
+  padding: 0 4px 0 4px;
+}
+
+.label {
+  transition: all 0.2s ease-out;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+}
+
+.right {
+  animation: swipeRight 1s linear;
+}
+
+@keyframes swipeRight {
+  0% {
+    opacity: 0;
+    transform: translate3d(40px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}

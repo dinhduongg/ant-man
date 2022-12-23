@@ -27,14 +27,14 @@ export class AuthService {
     try {
       const accessToken = this.jwtService.sign(user)
 
-      res.cookie('jwt', accessToken, {
+      res.cookie('jwt', { accessToken, username: user.username, fullname: user.fullname, roles: user.authorities }, {
         httpOnly: true,
         secure: false,
         path: "/",
         sameSite: "strict",
       })
 
-      return { accessToken };
+      return { accessToken, username: user.username, roles: user.authorities };
     } catch (error) {
       throw error
     }

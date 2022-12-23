@@ -1,5 +1,5 @@
-import { productCart as IProduct } from '@/entities/shared/cart.interface'
-import { User as IUser, Address as IAddress } from '@/entities/shared/account.interface'
+import { productCart as IProduct } from './cart.interface'
+import { User as IUser, Address as IAddress } from './account.interface'
 
 export interface paymentResult {
     username: string
