@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import { FC, useEffect } from 'react'
+import { FC, Key, useEffect } from 'react'
 
-import productApiServices from '~/api-services/productApiServices'
 import Helmet from '~/components/Helmet'
 import ProductsLap from '~/components/Product'
 import { Query as IQuery } from '~/shared/interface'
+import { Product as IProduct } from '~/shared/product.interface'
+import { publicAxios } from '~/utils/axiosClient'
 
 interface Props {
   query: IQuery
@@ -13,7 +14,7 @@ interface Props {
 const MaleWatch: FC<Props> = ({ query }) => {
   const { data: products, refetch } = useQuery({
     queryKey: ['products', query.filters.mainSide],
-    queryFn: () => productApiServices.getProducts(query)
+    queryFn: () => publicAxios.get('/products', { params: { ...query } })
   })
 
   useEffect(() => {
@@ -23,10 +24,9 @@ const MaleWatch: FC<Props> = ({ query }) => {
   return (
     <Helmet title='Đồng hồ nam'>
       <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4'>
-        {/* {products?.data.products.map((product, index) => {
-          return <ProductsLap key={index} product={product} />
-        })} */}
-        123
+        {products?.data.map((product: IProduct) => {
+          return <ProductsLap key={product.id} product={product} />
+        })}
       </div>
     </Helmet>
   )

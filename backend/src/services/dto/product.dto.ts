@@ -9,6 +9,8 @@ export class ProductDTO implements IProduct {
     rating: number
     numReviews: number
     countInStock: number
+    sale: number
+    soldCount: number
     description: string
     image: string
     imageGalley: string[]

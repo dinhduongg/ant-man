@@ -12,6 +12,8 @@ export class Product extends SnowflakeBase implements IProduct {
     @Property() rating: number
     @Property() numReviews: number
     @Property() countInStock: number
+    @Property() sale: number
+    @Property() soldCount: number
     @Property() description: string
     @Property() image: string
     @Property() imageGalley: string[]

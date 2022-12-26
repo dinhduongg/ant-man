@@ -1,13 +1,14 @@
-import { faStar } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useQuery } from '@tanstack/react-query'
-import { FC, useState } from 'react'
+import { FC, SetStateAction, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
+import queryString from 'query-string'
 import Button from '~/components/Button'
+import Rating from '~/pages/ProductDetail/components/Rating'
 import useAuth from '~/hooks/useAuth'
 import { Review as IReview } from '~/shared/review.interface'
-import reviewApiServices from '~/api-services/reviewApiServices'
+import { publicAxios } from '~/utils/axiosClient'
+import Comment from '../Comment'
 
 const UserReview: FC = () => {
   const [reviews, setReviews] = useState<IReview[]>()
@@ -16,14 +17,21 @@ const UserReview: FC = () => {
   const { id } = useParams()
   const { auth } = useAuth()
 
-  useQuery({
-    queryKey: ['reviews'],
-    queryFn: () => reviewApiServices.getReviews(id as string),
-    enabled: id !== undefined,
-    onSuccess: (data) => {
-      setReviews(data.data.reviews)
-    }
+  const { data } = useQuery({
+    queryKey: ['review', id],
+    queryFn: () =>
+      publicAxios.get(`/review/get/${id}`, {
+        paramsSerializer: {
+          serialize: (params) => queryString.stringify(params)
+        }
+      }),
+    staleTime: 60 * 1000,
+    enabled: id !== undefined
   })
+
+  useEffect(() => {
+    setReviews(data?.data)
+  }, [data])
 
   const handleReview = () => {
     if (!Boolean(auth)) {
@@ -31,23 +39,15 @@ const UserReview: FC = () => {
     } else if (Boolean(auth) && !Boolean(auth?.fullname)) {
       alert('Mời bạn cập nhật họ và tên')
     } else {
-      alert('Thêm review thành công')
+      alert(rating)
     }
   }
 
   return (
     <div className='border border-[#ddd] p-7 text-[#353535]'>
       {reviews && reviews.length !== 0 ? (
-        reviews.map((item, index) => {
-          return (
-            <div key={index}>
-              <h3 className='text-xl text-[#1c1c1c] mb-2 font-bold'>{item.comment}</h3>
-              <div className='mb-5 flex items-center space-x-4'>
-                <h2 className='text-base text-[#353535]'>{item.comment}</h2>
-                <h2 className='text-base text-[#353535]'>{item.rating} sao</h2>
-              </div>
-            </div>
-          )
+        reviews.map((item) => {
+          return <Comment key={item.id} review={item} />
         })
       ) : (
         <div>
@@ -59,19 +59,11 @@ const UserReview: FC = () => {
         {/* <h3 className='text-xl text-[#1c1c1c] mb-2 font-bold'>Hãy là người đầu tiên nhận xét :name</h3> */}
         <p className='text-base text-[#353535]'>Đánh giá của bạn</p>
         <div className='space-x-0 md:space-x-4 flex flex-col items-start md:flex-row md:items-center text-[#ddd] mb-2'>
-          {[1, 2, 3, 4, 5].map((item) => {
-            return (
-              <ul
-                key={item.toString()}
-                className={`cursor-pointer hover:text-[#d26e4b] ${item === rating ? 'text-[#d26e4b]' : 'text-[#ddd]'}`}
-                onClick={() => setRating(item)}
-              >
-                {[...Array(item)].map((index) => {
-                  return <FontAwesomeIcon key={index} icon={faStar} />
-                })}
-              </ul>
-            )
-          })}
+          <Rating
+            rating={rating}
+            onRating={(rate: SetStateAction<number>) => setRating(rate === rating ? 0 : rate)}
+            isEdit
+          />
         </div>
         <div>
           <h2 className='text-[#1c1c1c] mb-2 font-bold'>Nhận xét của bạn *</h2>

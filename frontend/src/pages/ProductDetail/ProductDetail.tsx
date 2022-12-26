@@ -1,16 +1,18 @@
 import { useQuery } from '@tanstack/react-query'
+import queryString from 'query-string'
 import { FC, useState } from 'react'
 
 import { useParams } from 'react-router-dom'
-import productApiServices from '~/api-services/productApiServices'
 import Button from '~/components/Button'
 import Helmet from '~/components/Helmet'
 import { ProductDetailSlider } from '~/components/Swiper'
 import ProductSlider from '~/components/Swiper/ProductSlider'
-import { Product as IProduct } from '~/shared/product.interface'
-import { vietnameseCurrency } from '~/utils/utils'
-import { UserReview } from './UserReview'
 import useAuth from '~/hooks/useAuth'
+import { Actions } from '~/shared/enums'
+import { Product as IProduct } from '~/shared/product.interface'
+import { publicAxios } from '~/utils/axiosClient'
+import { vietnameseCurrency } from '~/utils/utils'
+import { UserReview } from './components/UserReview'
 
 const initialState: IProduct = {
   id: '',
@@ -21,6 +23,8 @@ const initialState: IProduct = {
   rating: 0,
   numReviews: 0,
   countInStock: 0,
+  sale: 0,
+  soldCount: 0,
   description: '',
   image: '',
   imageGalley: [],
@@ -36,12 +40,17 @@ const ProductDetail: FC = () => {
   const { id } = useParams()
   const { auth } = useAuth()
 
-  useQuery({
-    queryKey: ['products', id],
-    queryFn: () => productApiServices.getOneProduct(id as string),
+  const { isFetching } = useQuery({
+    queryKey: ['product', id],
+    queryFn: () =>
+      publicAxios.get(`/products/${id}`, {
+        paramsSerializer: {
+          serialize: (params) => queryString.stringify(params)
+        }
+      }),
     enabled: id !== undefined,
-    onSuccess: (data) => {
-      setProduct(data.data?.product)
+    onSuccess: (response) => {
+      setProduct(response.data)
     }
   })
 
@@ -121,7 +130,7 @@ const ProductDetail: FC = () => {
               <h2 className='text-base text-[#353535] font-bold'>Tính phí ship tự động</h2>
               <div className='grid grid-cols-3 gap-3'>
                 {ship.map((item, index) => {
-                  return <img key={index} src={item} />
+                  return <img key={index} src={item} alt='anh' />
                 })}
               </div>
             </div>
@@ -129,7 +138,7 @@ const ProductDetail: FC = () => {
               <h2 className='text-base text-[#353535] font-bold'>Thanh toán</h2>
               <div className='grid grid-cols-3 gap-3'>
                 {payment.map((item, index) => {
-                  return <img key={index} src={item} />
+                  return <img key={index} src={item} alt='anh' />
                 })}
               </div>
             </div>
@@ -183,7 +192,7 @@ const ProductDetail: FC = () => {
       {/* Related products */}
       <div className='py-8 px-4 lg:px-0'>
         <h2 className='text-2xl font-bold'>Sản phẩm tương tự</h2>
-        <ProductSlider />
+        <ProductSlider product={product} action={Actions.SIMILAR} />
       </div>
     </Helmet>
   )

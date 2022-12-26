@@ -11,9 +11,9 @@ import * as yup from 'yup'
 
 import Button from '~/components/Button'
 import Helmet from '~/components/Helmet'
+import usePrivateAxios from '~/hooks/usePrivateAxios'
 import { registerData } from '~/shared/account.interface'
 import { isAxiosError } from '~/utils/utils'
-import userApiServices from '~/api-services/userApiServices'
 import './Register.css'
 
 type formError =
@@ -32,18 +32,19 @@ const schema = yup
   .object({
     username: yup.string().required('Điền vào đi mầy'),
     password: yup.string().required('Điền vào đi mầy'),
-    confirm: yup.string().required('Điền vào đi mầy')
+    confirmPassword: yup.string().required('Điền vào đi mầy')
   })
   .required()
 
 const Register: FC = () => {
   const [init, setInit] = useState<registerData>(initialState)
   const navigate = useNavigate()
+  const privateAxios = usePrivateAxios()
 
   // react query
   const { mutate, error, reset } = useMutation({
     mutationFn: (body: registerData) => {
-      return userApiServices.register(body)
+      return privateAxios.post('/auth/register', body)
     }
   })
 
@@ -59,7 +60,6 @@ const Register: FC = () => {
     register,
     watch,
     handleSubmit,
-    setValue,
     formState: { errors }
   } = useForm<registerData>({
     resolver: yupResolver(schema)
@@ -77,10 +77,6 @@ const Register: FC = () => {
 
   useEffect(() => {
     const subscription = watch((value) => {
-      // if (value || error) {
-      //   reset()
-      // }
-
       setInit((prev) => ({
         ...prev,
         ...value

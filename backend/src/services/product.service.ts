@@ -1,14 +1,17 @@
 import { Product } from '@/entities/product.entity';
+import { Actions } from '@/entities/shared/enums';
+import { Pageable, Query as IQuery } from "@/entities/shared/interface";
+import { makeFindOptions } from '@/support/utility';
+import { wrap } from '@mikro-orm/core';
 import { EntityManager, MongoEntityRepository } from '@mikro-orm/mongodb';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { CACHE_MANAGER, Injectable } from '@nestjs/common';
 import { Inject } from '@nestjs/common/decorators/core/inject.decorator';
+import { HttpStatus } from '@nestjs/common/enums';
+import { HttpException } from '@nestjs/common/exceptions';
 import { Cache } from 'cache-manager';
-import { wrap } from '@mikro-orm/core';
 import { ProductDTO } from './dto/product.dto';
 import { ProductMapper } from './mappers/product.mapper';
-import { HttpException } from '@nestjs/common/exceptions';
-import { HttpStatus } from '@nestjs/common/enums';
 
 @Injectable()
 export class ProductService {
@@ -33,12 +36,21 @@ export class ProductService {
     }
   }
 
-  async findAll(): Promise<ProductDTO[]> {
+  async findAll(query: IQuery): Promise<ProductDTO[]> {
     try {
-      const products = await this.repository.find({})
+      const { filters, pageable, search, searchType } = query
+      const where = {}
+
+      for (var key in filters) {
+        if (filters[key] !== 'all') {
+          where[key] = filters[key]
+        }
+      }
+
+      const products = await this.repository.find(where, makeFindOptions(pageable))
       return products.map(product => this.mapper.toDTO(product))
     } catch (error) {
-      console.log("lỗi catch: ", error)
+      throw error
     }
   }
 
@@ -48,7 +60,52 @@ export class ProductService {
       if (!product) throw new HttpException("Không tìm thấy sản phẩm", HttpStatus.BAD_REQUEST)
       return this.mapper.toDTO(product)
     } catch (error) {
-      console.log("lỗi catch: ", error)
+      throw error
+    }
+  }
+
+  async findByAction(action: string, product: ProductDTO): Promise<ProductDTO[]> {
+    try {
+      const pageable: Pageable = {
+        page: 0,
+        maxPage: 12,
+        sort: {
+          field: 'createdAt',
+          order: 'd'
+        }
+      }
+
+      const where = {}
+
+      if (action === Actions.POPULAR) {
+        // num review
+        pageable.sort['field'] = 'numReviews'
+      }
+
+      if (action === Actions.NEW) {
+        // created at
+        pageable.sort['field'] = 'createdAt'
+      }
+
+      if (action === Actions.SALE) {
+        // sale
+        where['sale'] = { $exists: true }
+      }
+
+      if (action === Actions.SOLDCOUNT) {
+        // soldCount
+        pageable.sort['field'] = 'soldCount'
+      }
+
+      if (action === Actions.SIMILAR) {
+        where['brand'] = { $in: [product.brand] }
+        where['mainSide'] = product.mainSide
+      }
+
+      const products = await this.repository.find(where, makeFindOptions(pageable))
+      return products.map(product => this.mapper.toDTO(product))
+    } catch (error) {
+      throw error
     }
   }
 

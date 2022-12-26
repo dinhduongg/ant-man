@@ -7,6 +7,8 @@ export interface Product {
     rating: number
     numReviews: number
     countInStock: number
+    sale: number
+    soldCount: number
     description: string
     image: string
     imageGalley: string[]

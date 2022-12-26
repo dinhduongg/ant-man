@@ -15,7 +15,7 @@ export interface Pageable {
     page: number;
     size?: number;
     maxPage?: number;
-    sort?: Sort[];
+    sort?: Sort;
 }
 
 export interface Query {

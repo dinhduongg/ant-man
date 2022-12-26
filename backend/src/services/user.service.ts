@@ -38,7 +38,7 @@ export class UserService {
   async findOne(username: string): Promise<UserDTO> {
     try {
       const user = await this.repository.findOne({ username: username })
-      if (!user) throw new HttpException(`Không tìm thấy người dùng ${username}`, HttpStatus.BAD_REQUEST)
+      if (!user) throw new HttpException({ error: { username: `Tài khoản ${username} không tồn tại` } }, HttpStatus.UNPROCESSABLE_ENTITY)
       return this.mapper.toDTO(user)
     } catch (error) {
       throw error
@@ -47,19 +47,19 @@ export class UserService {
 
   async create(dto: registerData): Promise<UserDTO | any> {
     try {
-      if (dto.password !== dto.confirmPassword) throw new HttpException('Mật khẩu không khớp', HttpStatus.UNPROCESSABLE_ENTITY)
+      if (dto.password !== dto.confirmPassword) throw new HttpException({ error: { password: "Mật khẩu không khớp" } }, HttpStatus.UNPROCESSABLE_ENTITY)
 
       const checkUser = await this.repository.findOne({ username: dto.username })
-      if (checkUser) throw new HttpException('Tên đăng nhập đã tồn tại', HttpStatus.UNPROCESSABLE_ENTITY)
+      if (checkUser) throw new HttpException({ error: { username: "Tên đăng nhập đã tồn tại" } }, HttpStatus.UNPROCESSABLE_ENTITY)
 
       const user = this.repository.create(cloneDeep(generalUserTemplate))
       user.username = dto.username
       user.password = await hash(dto.password, 10)
 
       await this.repository.persistAndFlush(user)
-      throw new HttpException('Đăng ký thành công', HttpStatus.CREATED)
+      return this.mapper.toDTO(user)
     } catch (error) {
-      console.log(error)
+      throw error
     }
   }
 

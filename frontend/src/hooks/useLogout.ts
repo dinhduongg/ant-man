@@ -11,8 +11,6 @@ const useLogout = () => {
         try {
             await userApiServices.logout()
             setAuth(authState)
-            localStorage.removeItem('auth')
-            console.log("done")
             navigate('/')
         } catch (error) {
             console.error("có lỗi: ", error)

@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import Header from '~/components/Layout/components/Header'
 import Footer from '~/components/Layout/components/Footer'
 import MobileSort from './MobileSort'
-import { Query as IQuery } from '~/shared/interface'
+import { Pageable, Query as IQuery } from '~/shared/interface'
 
 interface Props {
   children: React.ReactNode | any
@@ -21,12 +21,10 @@ const initQuery: IQuery = {
   pageable: {
     page: 0,
     maxPage: 10,
-    sort: [
-      {
-        field: 'createdAt',
-        order: 'a'
-      }
-    ]
+    sort: {
+      field: 'createdAt',
+      order: 'd'
+    }
   }
 }
 
@@ -54,25 +52,25 @@ const ProductLayout: FC<Props> = ({ children }) => {
       key: 'old',
       name: 'Mới nhất',
       field: 'createdAt',
-      order: 'descending'
+      order: 'd'
     },
     {
       key: 'new',
       name: 'Theo thứ tự mặc định',
       field: 'createdAt',
-      order: 'ascending'
+      order: 'a'
     },
     {
       key: 'increase-price',
       name: 'Theo thứ tự giá: thấp đến cao',
       field: 'price',
-      order: 'ascending'
+      order: 'a'
     },
     {
       key: 'decrease-price',
       name: 'Theo thứ tự giá: cao đến thấp',
       field: 'price',
-      order: 'descending'
+      order: 'd'
     }
   ]
 
@@ -99,37 +97,35 @@ const ProductLayout: FC<Props> = ({ children }) => {
     }
   ]
 
-  const handleFilters = (v: string, type: string) => {
-    console.log(123)
-    //   const transType = Number(v)
+  const handleFilters = (v: string) => {
+    setQuery((prev) => ({
+      ...prev,
+      filters: {
+        ...prev.filters,
+        brand: v
+      },
+      pageable: {
+        ...prev.pageable
+      } as Pageable
+    }))
+  }
 
-    //   if (type === 'brand') {
-    //     setQuery((prev) => ({
-    //       ...prev,
-    //       filters: {
-    //         ...prev.filters,
-    //         brand: v
-    //       },
-    //       pageable: {
-    //         ...prev.pageable
-    //       } as IPageable
-    //     }))
-    //   } else {
-    //     setValue(transType)
-    //     setQuery((prev) => ({
-    //       ...prev,
-    //       filters: {
-    //         ...prev.filters
-    //       },
-    //       pageable: {
-    //         ...prev.pageable,
-    //         sort: {
-    //           field: options[transType].field,
-    //           order: options[transType].order
-    //         }
-    //       } as IPageable
-    //     }))
-    //   }
+  const handleSort = (v: string) => {
+    const transType = Number(v)
+    setValue(transType)
+    setQuery((prev) => ({
+      ...prev,
+      filters: {
+        ...prev.filters
+      },
+      pageable: {
+        ...prev.pageable,
+        sort: {
+          field: options[transType].field,
+          order: options[transType].order
+        }
+      } as Pageable
+    }))
   }
 
   useEffect(() => {
@@ -171,7 +167,7 @@ const ProductLayout: FC<Props> = ({ children }) => {
             <label className='hidden lg:inline-block'>Hiển thị một kết quả duy nhất</label>
             <select
               className='border-2 border-[#ccc] px-2 py-1 outline-none'
-              onChange={(e) => handleFilters(e.target.value, 'order')}
+              onChange={(e) => handleSort(e.target.value)}
               value={value}
             >
               {options.map((item, index) => {
@@ -193,7 +189,7 @@ const ProductLayout: FC<Props> = ({ children }) => {
                   <div
                     key={item.id}
                     className='flex items-center space-x-2 cursor-pointer'
-                    onClick={() => handleFilters(item.define, 'brand')}
+                    onClick={() => handleFilters(item.define)}
                   >
                     <div className='p-1 h-5 w-5 flex items-center justify-center border border-primary text-primary'>
                       <FontAwesomeIcon

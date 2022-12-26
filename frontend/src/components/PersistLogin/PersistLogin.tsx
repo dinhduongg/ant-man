@@ -8,8 +8,6 @@ const PersistLogin: FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const { auth, setAuth } = useAuth()
   const [cookie, useCookie] = useCookies()
-  const localAuth = JSON.parse(localStorage.getItem('auth') as string)
-  console.log('cookie is: ', cookie)
 
   useEffect(() => {
     const verifyRefreshToken = async () => {
@@ -17,10 +15,10 @@ const PersistLogin: FC = () => {
         // await refresh()
         setAuth((prev: any) => ({
           ...prev,
-          accessToken: localAuth?.accessToken,
-          username: localAuth?.username,
-          fullname: localAuth?.fullname,
-          roles: localAuth?.roles
+          accessToken: cookie.jwt?.accessToken,
+          username: cookie.jwt?.username,
+          fullname: cookie.jwt?.fullname,
+          roles: cookie.jwt?.roles
         }))
       } catch (error) {
         console.log(error)

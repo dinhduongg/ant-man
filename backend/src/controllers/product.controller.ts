@@ -1,7 +1,8 @@
-import { JwtAuthGuard, RolesGuard, AuthUser, Roles } from '@/authentication';
+import { JwtAuthGuard, Roles, RolesGuard } from '@/authentication';
 import { AuthorityRole } from '@/entities/shared/enums';
+import { Query as IQuery } from '@/entities/shared/interface';
 import { ProductDTO } from '@/services/dto/product.dto';
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ProductService } from '../services/product.service';
 
 @Controller('products')
@@ -9,8 +10,8 @@ export class ProductController {
   constructor(private readonly productService: ProductService) { }
 
   @Get()
-  findAll(): Promise<ProductDTO[]> {
-    return this.productService.findAll();
+  findAll(@Query() query: IQuery): Promise<ProductDTO[]> {
+    return this.productService.findAll(query);
   }
 
   @Post('create')
@@ -23,6 +24,11 @@ export class ProductController {
   @Get(':id')
   findOne(@Param('id') id: string): Promise<ProductDTO> {
     return this.productService.findOne(id);
+  }
+
+  @Get('action/:action')
+  findByAction(@Param('action') action: string, @Query() product: ProductDTO): Promise<ProductDTO[]> {
+    return this.productService.findByAction(action, product)
   }
 
   @Patch('update/:id')

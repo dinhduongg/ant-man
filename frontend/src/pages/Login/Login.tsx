@@ -12,20 +12,18 @@ import * as yup from 'yup'
 import Button from '~/components/Button'
 import Helmet from '~/components/Helmet'
 import useAuth from '~/hooks/useAuth'
-// import useUserApi from '~/hooks/useUserApi'
+import usePrivateAxios from '~/hooks/usePrivateAxios'
+import { registerData, User as IUser } from '~/shared/account.interface'
 import { isAxiosError } from '~/utils/utils'
-import userApiServices from '~/api-services/userApiServices'
 import './Login.css'
 
 type formError =
   | {
-      [key in keyof Omit<IFormInputs, 'confirm'>]: string
+      [key in keyof Omit<registerData, 'confirmPassword'>]: string
     }
   | null
-interface IFormInputs {
-  username: string
-  password: string
-}
+
+type IFormInputs = Omit<registerData, 'confirmPassword'>
 
 const initialState: IFormInputs = {
   username: '',
@@ -42,8 +40,7 @@ const schema = yup
 const Login: FC = () => {
   const [init, setInit] = useState<IFormInputs>(initialState)
   const { setAuth } = useAuth()
-
-  // const { authApi } = useUserApi()
+  const privateAxios = usePrivateAxios()
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -51,7 +48,7 @@ const Login: FC = () => {
 
   const { mutate, error } = useMutation({
     mutationFn: (body: IFormInputs) => {
-      return userApiServices.login(body)
+      return privateAxios.post<Partial<IUser> & { accessToken: string }>('/auth/login', body)
     }
   })
 
@@ -73,17 +70,14 @@ const Login: FC = () => {
   })
 
   const onSubmit = (data: IFormInputs) => {
-    console.log(data)
     mutate(data, {
       onSuccess: (response) => {
-        // const accessToken = response.data.accessToken as string
-        // const roles = response.data.authorities
-        // const username = response.data.username
-        // const fullname = response.data.fullname ?? ''
-        // localStorage.setItem('auth', JSON.stringify({ accessToken, roles, username, fullname }))
-        // setAuth({ accessToken, roles, username, fullname })
-        // navigate(from, { replace: true })
-        console.log(response.data)
+        const accessToken = response.data.accessToken as string
+        const roles = response.data.authorities ?? []
+        const username = response.data.username ?? ''
+        const fullname = response.data.fullname ?? ''
+        setAuth({ accessToken, roles, username, fullname })
+        navigate(from, { replace: true })
       }
     })
   }

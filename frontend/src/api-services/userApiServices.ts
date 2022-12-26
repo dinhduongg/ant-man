@@ -4,12 +4,12 @@ import queryString, { parse, stringify } from 'query-string'
 
 const userApiServices = {
     register: (body: registerData) => {
-        const url = '/user/create'
+        const url = '/auth/register'
         return axiosClient.publicAxios.post<any>(url, body)
     },
     login: (body: Omit<registerData, 'confirmPassword'>) => {
         const url = '/auth/login'
-        return axiosClient.privateAxios.post<IUser>(url, body)
+        return axiosClient.privateAxios.post<Partial<IUser> & { accessToken: string }>(url, body)
     },
     logout: () => {
         const url = '/auth/logout'
