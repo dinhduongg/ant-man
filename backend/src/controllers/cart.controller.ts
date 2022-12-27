@@ -25,13 +25,13 @@ export class CartController {
     return this.cartService.create(dto, username);
   }
 
-  @Patch(':username/:type')
-  update(@Param('username') username: string, @Param('type') type: cartType, @Body() dto: productCart) {
-    return this.cartService.update(username, type, dto);
+  @Patch('update/:username')
+  update(@Param('username') username: string, @Body() dto: Partial<productCart> & { type: string }) {
+    return this.cartService.update(username, dto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cartService.remove(+id);
+  @Delete('delete/:username/:id')
+  remove(@Param('id') id: string, @Param('username') username: string) {
+    return this.cartService.remove(id, username);
   }
 }

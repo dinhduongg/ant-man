@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { FC, SetStateAction, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
@@ -9,15 +9,22 @@ import useAuth from '~/hooks/useAuth'
 import { Review as IReview } from '~/shared/review.interface'
 import { publicAxios } from '~/utils/axiosClient'
 import Comment from '../Comment'
+import usePrivateAxios from '~/hooks/usePrivateAxios'
+import { toast } from 'react-toastify'
 
 const UserReview: FC = () => {
   const [reviews, setReviews] = useState<IReview[]>()
+  const [reviewId, setReviewId] = useState('')
   const [rating, setRating] = useState(0)
+  const [comment, setComment] = useState('')
+  const [type, setType] = useState('add')
+
+  const privateAxios = usePrivateAxios()
 
   const { id } = useParams()
   const { auth } = useAuth()
 
-  const { data } = useQuery({
+  const { data, refetch } = useQuery({
     queryKey: ['review', id],
     queryFn: () =>
       publicAxios.get(`/review/get/${id}`, {
@@ -29,17 +36,69 @@ const UserReview: FC = () => {
     enabled: id !== undefined
   })
 
+  const { mutate: addReview, error: addError } = useMutation({
+    mutationFn: (body: any) => {
+      return privateAxios.post(`/review/create/${auth?.username}/${id}`, body)
+    }
+  })
+
+  const { mutate: updateReview, error: updateError } = useMutation({
+    mutationFn: (body: any) => {
+      return privateAxios.patch(`/review/update/${reviewId}`, body)
+    }
+  })
+
   useEffect(() => {
     setReviews(data?.data)
   }, [data])
 
   const handleReview = () => {
-    if (!Boolean(auth)) {
-      alert('Mời bạn đăng nhập!')
-    } else if (Boolean(auth) && !Boolean(auth?.fullname)) {
-      alert('Mời bạn cập nhật họ và tên')
+    if (rating === 0) {
+      toast.error('Bạn chưa nhập sao')
+    } else if (!comment) {
+      toast.error('Bạn chưa nhập đánh giá')
     } else {
-      alert(rating)
+      const review = {
+        rating: rating,
+        comment: comment
+      }
+
+      if (type === 'add') {
+        addReview(review, {
+          onSuccess: () => {
+            setRating(0)
+            setComment('')
+            toast.success('Thêm bình luận thành công')
+            refetch()
+          },
+          onError: (error: any) => {
+            toast.error(error.response?.data?.message)
+          }
+        })
+      } else {
+        updateReview(review, {
+          onSuccess: () => {
+            setRating(0)
+            setComment('')
+            setReviewId('')
+            setType('add')
+            toast.success('Cập nhật bình luận thành công')
+            refetch()
+          },
+          onError: (error: any) => {
+            toast.error(error.response?.data?.message)
+          }
+        })
+      }
+    }
+  }
+
+  const handleData = (data: IReview) => {
+    if (data) {
+      setRating(data.rating)
+      setComment(data.comment)
+      setReviewId(data.id)
+      setType('update')
     }
   }
 
@@ -47,7 +106,7 @@ const UserReview: FC = () => {
     <div className='border border-[#ddd] p-7 text-[#353535]'>
       {reviews && reviews.length !== 0 ? (
         reviews.map((item) => {
-          return <Comment key={item.id} review={item} />
+          return <Comment key={item.id} review={item} handleData={handleData} />
         })
       ) : (
         <div>
@@ -67,24 +126,14 @@ const UserReview: FC = () => {
         </div>
         <div>
           <h2 className='text-[#1c1c1c] mb-2 font-bold'>Nhận xét của bạn *</h2>
-          <textarea className='p-2 w-full outline-none border border-[#ddd] mb-4' rows={4} />
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 mb-2'>
-            <div>
-              <p className='text-[#1c1c1c] mb-2 font-bold'>Tên *</p>
-              <input
-                type='text'
-                placeholder={auth?.fullname}
-                className='placeholder-primary p-2 w-full outline-none border border-[#ddd]'
-                disabled
-              />
-            </div>
-            {/* <div>
-          <p className='text-[#1c1c1c] mb-2 font-bold'>Email *</p>
-          <input type='text' className='p-2 w-full outline-none border border-[#ddd]' />
-        </div> */}
-          </div>
+          <textarea
+            className='p-2 w-full outline-none border border-[#ddd] mb-4'
+            rows={4}
+            value={comment}
+            onChange={(e) => setComment(() => e.target.value)}
+          />
           <Button primary custom='w-auto' onClick={handleReview}>
-            Gửi đi
+            {type === 'add' ? 'Gửi đi' : 'Cập nhật'}
           </Button>
         </div>
       </div>

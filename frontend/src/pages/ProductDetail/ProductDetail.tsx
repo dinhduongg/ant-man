@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import queryString from 'query-string'
 import { FC, useState } from 'react'
 
@@ -13,6 +13,9 @@ import { Product as IProduct } from '~/shared/product.interface'
 import { publicAxios } from '~/utils/axiosClient'
 import { vietnameseCurrency } from '~/utils/utils'
 import { UserReview } from './components/UserReview'
+import { productCart } from '~/shared/cart.interface'
+import usePrivateAxios from '~/hooks/usePrivateAxios'
+import { toast } from 'react-toastify'
 
 const initialState: IProduct = {
   id: '',
@@ -39,8 +42,10 @@ const ProductDetail: FC = () => {
 
   const { id } = useParams()
   const { auth } = useAuth()
+  const privateAxios = usePrivateAxios()
+  const queryClient = useQueryClient()
 
-  const { isFetching } = useQuery({
+  useQuery({
     queryKey: ['product', id],
     queryFn: () =>
       publicAxios.get(`/products/${id}`, {
@@ -54,15 +59,32 @@ const ProductDetail: FC = () => {
     }
   })
 
-  const handleAddToCart = (product: any) => {
-    if (Boolean(auth?.accessToken) && Boolean(product)) {
-      // mutate(product, {
-      //   onSuccess: (response) => {
-      //     console.log(response)
-      //     alert('Thêm vào giỏ hàng thành công')
-      //   }
-      // })
-      console.log(product)
+  const { mutate } = useMutation({
+    mutationFn: (body: productCart) => {
+      return privateAxios.post(`/carts/create/${auth?.username}`, body)
+    }
+  })
+
+  const handleAddToCart = (product: IProduct) => {
+    const productCart = {
+      id: product.id,
+      image: product.image,
+      name: product.title,
+      price: product.price,
+      quantity: quantity
+    } as productCart
+
+    if (Boolean(auth?.accessToken) && Boolean(productCart)) {
+      mutate(productCart, {
+        onSuccess: () => {
+          setQuantity(1)
+          toast.success('Thêm vào giỏ hàng thành công')
+          queryClient.invalidateQueries({ queryKey: ['cart', auth?.username], exact: true })
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message)
+        }
+      })
     } else {
       alert('Bạn chưa đăng nhập! Đăng nhập ngay?')
     }
@@ -95,7 +117,7 @@ const ProductDetail: FC = () => {
         <div className='h-fit'>
           <h1 className='text-2xl'>{product.title}</h1>
           <div className='w-8 bg-black h-1 rounded-full my-4'></div>
-          <p className='text-primary text-2xl'>{vietnameseCurrency(product.price * quantity)}</p>
+          <p className='text-primary text-2xl'>{vietnameseCurrency(product.price)}</p>
           <div className='py-4'>
             <p className='pb-4 text-[#353535]'>{product.description}</p>
             <div className='pb-2 text-[#353535]'>

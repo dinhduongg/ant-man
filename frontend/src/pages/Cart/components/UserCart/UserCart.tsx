@@ -1,53 +1,99 @@
 import { faXmarkCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import classNames from 'classnames'
 import { FC, useState } from 'react'
 import { NavLink } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import useAuth from '~/hooks/useAuth'
+import usePrivateAxios from '~/hooks/usePrivateAxios'
+import { productCart } from '~/shared/cart.interface'
+import { cartType } from '~/shared/enums'
+import { vietnameseCurrency } from '~/utils/utils'
 
-const UserCart: FC = () => {
-  const [quantity, setQuantity] = useState(1)
+interface Props {
+  product: productCart
+  isFetching: boolean
+}
 
-  const handleRemove = () => {
-    alert('remove success')
+const UserCart: FC<Props> = ({ product, isFetching }) => {
+  const [data, setData] = useState(product)
+  const { auth } = useAuth()
+  const privateAxios = usePrivateAxios()
+  const queryClient = useQueryClient()
+
+  const { mutate } = useMutation({
+    mutationFn: (body: Partial<productCart> & { type: string }) => {
+      return privateAxios.patch(`/carts/update/${auth?.username}`, body)
+    }
+  })
+
+  const { mutate: deleteFromCart } = useMutation({
+    mutationFn: (id: string) => {
+      return privateAxios.delete(`/carts/delete/${auth?.username}/${id}`)
+    }
+  })
+
+  const handleUpdateCart = (type: string) => {
+    mutate(
+      { ...data, type },
+      {
+        onSuccess: () => {
+          toast.success('Cập nhật thành công')
+          queryClient.invalidateQueries({ queryKey: ['cart', auth?.username], exact: true })
+        }
+      }
+    )
+  }
+
+  const handleRemove = (id: string) => {
+    deleteFromCart(id, {
+      onSuccess: () => {
+        toast.success('Bỏ khỏi giỏ hàng thành công')
+        queryClient.invalidateQueries({ queryKey: ['cart', auth?.username], exact: true })
+      }
+    })
   }
 
   return (
     <>
       <div className='text-start space-x-2 flex items-center'>
-        <div className='cursor-pointer hover:opacity-60 duration-150' onClick={handleRemove}>
-          <FontAwesomeIcon className='text-lg' icon={faXmarkCircle} />
-        </div>
-        <NavLink to='/san-pham/1' className='block w-16 h-16 lg:w-20 lg:h-20 overflow-hidden'>
-          <img
-            className='w-full h-full'
-            src='http://mauweb.monamedia.net/donghohaitrieu/wp-content/uploads/2019/07/product-01-300x300.png'
-          />
+        <NavLink to={`/san-pham/${product.id}`} className='block w-16 h-16 lg:w-20 lg:h-20 overflow-hidden'>
+          <img className='w-full h-full' src={product.image} />
         </NavLink>
         <div>
-          <span className='text-xs lg:text-base'>Tên sản phẩm</span>
-          <p className='block lg:hidden'>1 x 700.000đ</p>
+          <span className='text-xs lg:text-base'>{product.name}</span>
+          <p className='block lg:hidden'>
+            {product.quantity} x {vietnameseCurrency(product.price)}
+          </p>
         </div>
       </div>
       <p className='hidden lg:flex items-center text-start text-2xl'>
-        <span className='text-lg font-extrabold'>700000đ</span>
+        <span className='text-lg font-extrabold'>{vietnameseCurrency(product.price)}</span>
       </p>
       <div className='justify-end lg:justify-start'>
         <span
           className='py-2 px-3 border border-[#353535] cursor-pointer hover:bg-[#ddd]'
-          onClick={() => setQuantity(quantity === 1 ? 1 : quantity - 1)}
+          onClick={() => handleUpdateCart(cartType.decrease)}
         >
           -
         </span>
-        <span className='py-2 px-5 border-t border-b border-t-[#353535] border-b-[#353535]'>{quantity}</span>
+        <span className='py-2 px-5 border-t border-b border-t-[#353535] border-b-[#353535]'>{product.quantity}</span>
         <span
           className='py-2 px-3 border border-[#353535] cursor-pointer hover:bg-[#ddd]'
-          onClick={() => setQuantity(quantity + 1)}
+          onClick={() => handleUpdateCart(cartType.increase)}
         >
           +
         </span>
       </div>
       <p className='hidden lg:flex items-center text-start text-2xl'>
-        <span className='text-lg font-extrabold'>700000đ</span>
+        <span className='text-lg font-extrabold'>{vietnameseCurrency(product.totalMoney)}</span>
       </p>
+      <div>
+        <div className='cursor-pointer hover:opacity-60 duration-150 h-fit' onClick={() => handleRemove(product.id)}>
+          <FontAwesomeIcon className='text-lg' icon={faXmarkCircle} />
+        </div>
+      </div>
     </>
   )
 }

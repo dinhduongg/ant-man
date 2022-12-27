@@ -1,15 +1,25 @@
 import { FC } from 'react'
 import { Review } from '~/shared/review.interface'
 import Rating from '../Rating'
+import useAuth from '~/hooks/useAuth'
 
 interface Props {
   review: Review
+  handleData: any
 }
 
-const Comment: FC<Props> = ({ review }) => {
+const Comment: FC<Props> = ({ review, handleData }) => {
+  const { auth } = useAuth()
   return (
     <div key={review.id}>
-      <h3 className='text-xl text-[#1c1c1c] font-bold'>{review.username}</h3>
+      <div className='flex items-baseline space-x-2'>
+        <h3 className='text-xl text-[#1c1c1c] font-bold'>{review.username}</h3>
+        {auth?.username === review.username && (
+          <span className='cursor-pointer hover:underline hover:text-primary' onClick={() => handleData(review)}>
+            Chỉnh sửa
+          </span>
+        )}
+      </div>
       <h2 className='text-base text-[#353535]'>
         <Rating rating={review.rating} />
       </h2>

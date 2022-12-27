@@ -46,24 +46,15 @@ export class CartService {
 
       if (userCart) {
         const isExistProduct = userCart.products.find(item => item.id === dto.id)
-        if (isExistProduct) {
-          isExistProduct.quantity += dto.quantity
-          isExistProduct.totalMoney = isExistProduct.quantity * isExistProduct.price
+        if (isExistProduct) throw new HttpException("Sản phẩm đã tồn tại trong giỏ hàng!", HttpStatus.BAD_REQUEST)
 
-          userCart.totalQuantity += dto.quantity
-          userCart.totalPrice += dto.totalMoney
+        userCart.username = username
+        userCart.products.push(dto)
+        userCart.totalPrice += dto.totalMoney
+        userCart.totalQuantity += dto.quantity
 
-          await this.repository.flush()
-          return this.mapper.toDTO(userCart)
-        } else {
-          userCart.username = username
-          userCart.products.push(dto)
-          userCart.totalPrice += dto.totalMoney
-          userCart.totalQuantity += dto.quantity
-
-          await this.repository.flush()
-          return this.mapper.toDTO(userCart)
-        }
+        await this.repository.flush()
+        return this.mapper.toDTO(userCart)
       }
 
       const cart = this.repository.create(cloneDeep(generalCartTemplate))
@@ -88,46 +79,52 @@ export class CartService {
     }
   }
 
-  async update(username: string, type: cartType, dto: productCart) {
+  async update(username: string, dto: Partial<productCart> & { type: string }) {
     try {
       const user = await this.em.findOne(User, { username })
       if (!user) throw new HttpException(`Người dùng ${username} không tồn tại`, HttpStatus.BAD_REQUEST)
 
-      const product = await this.em.findOne(Product, { id: dto.id })
-      if (!product) throw new HttpException("Sản phẩm không tồn tại!", HttpStatus.BAD_REQUEST)
+      const isExistProduct = await this.em.findOne(Product, { id: dto.id })
+      if (!isExistProduct) throw new HttpException("Sản phẩm không tồn tại!", HttpStatus.BAD_REQUEST)
 
       const userCart = await this.repository.findOne({ username })
       if (!userCart) throw new HttpException("Giỏ hàng của bạn không tồn tại!", HttpStatus.BAD_REQUEST)
 
-      dto.totalMoney = dto.quantity * dto.price
+      const product = userCart.products.find(item => item.id === dto.id)
+      if (dto.type === cartType.increase) {
+        product.quantity += 1
+        product.totalMoney = (product.quantity * product.price)
 
-      if (type === cartType.increase) {
-        const product = userCart.products.find(item => item.id === dto.id)
-        product.quantity += dto.quantity
-        product.totalMoney += (dto.quantity * dto.price)
+        userCart.totalPrice = userCart.products.reduce((sum, item) => sum + item.totalMoney, 0)
+        userCart.totalQuantity = userCart.products.reduce((sum, item) => sum + item.quantity, 0)
 
-        userCart.totalPrice += (dto.price * dto.quantity)
-        userCart.totalQuantity += dto.quantity
-
-        await this.repository.flush()
-        return this.mapper.toDTO(userCart)
+        this.repository.persist(userCart)
       } else {
-        const product = userCart.products.find(item => item.id === dto.id)
-        product.quantity -= dto.quantity
-        product.totalMoney -= (dto.quantity * dto.price)
+        product.quantity -= 1
+        product.totalMoney = (product.quantity * product.price)
 
-        userCart.totalPrice -= (dto.price * dto.quantity)
-        userCart.totalQuantity -= dto.quantity
+        userCart.totalPrice = userCart.products.reduce((sum, item) => sum + item.totalMoney, 0)
+        userCart.totalQuantity = userCart.products.reduce((sum, item) => sum + item.quantity, 0)
 
-        await this.repository.flush()
-        return this.mapper.toDTO(userCart)
+        this.repository.persist(userCart)
       }
+
+      await this.repository.flush()
+      return this.mapper.toDTO(userCart)
     } catch (error) {
       throw error
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} cart`;
+  async remove(id: string, username: string) {
+    try {
+      const userCart = await this.repository.findOne({ username })
+      if (!userCart) throw new HttpException("Giỏ hàng của bạn không tồn tại!", HttpStatus.BAD_REQUEST)
+
+      userCart.products = userCart.products.filter(item => item.id !== id)
+      await this.repository.persistAndFlush(userCart)
+    } catch (error) {
+      throw error
+    }
   }
 }

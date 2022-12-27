@@ -109,9 +109,9 @@ const ProductSlider: FC<Props> = ({ product, action }) => {
             return (
               <SwiperSlide key={product.id}>
                 <div className='relative border border-[#ddd] group'>
-                  <NavLink to={`/san-pham/${product.id}`} className='block border-b border-b-[#ddd]'>
-                    <img className='block' src={product.image} />
-                  </NavLink>
+                  {/* <NavLink to={`/san-pham/${product.id}`} className='block border-b border-b-[#ddd]'> */}
+                  <img className='block' src={product.image} />
+                  {/* </NavLink> */}
                   <div className='p-3 pb-4'>
                     <NavLink to={`/san-pham/${product.id}`} className='text-lg font-semibold text-[#3a3a3a] mt-1 mb-3'>
                       {product.title}
@@ -122,11 +122,14 @@ const ProductSlider: FC<Props> = ({ product, action }) => {
                       )}
                       <span className='text-sm text-primary font-black'>{vietnameseCurrency(product.price)}</span>
                     </div>
-                    <Button onClick={() => alert(123)} primary custom='w-3/4 lg:w-2/4 mx-auto'>
-                      Thêm vào giỏ
+                    <Button to={`/san-pham/${product.id}`} primary custom='w-3/4 lg:w-2/3 mx-auto'>
+                      xem sản phẩm
                     </Button>
                   </div>
-                  <div className='absolute top-2 right-2 flex items-center justify-center border-2 border-slate-300 p-2 rounded-full text-slate-300 opacity-0 group-hover:opacity-100 hover:border-red-700 hover:bg-red-700 hover:text-white duration-300'>
+                  <div
+                    onClick={() => alert(123)}
+                    className='absolute top-2 right-2 flex items-center justify-center border-2 border-slate-300 p-2 rounded-full text-slate-300 opacity-0 group-hover:opacity-100 hover:border-red-700 hover:bg-red-700 hover:text-white duration-300'
+                  >
                     <Tippy
                       offset={[0, 17]}
                       content='Thêm vào yêu thích'
@@ -142,41 +145,6 @@ const ProductSlider: FC<Props> = ({ product, action }) => {
               </SwiperSlide>
             )
           })}
-
-        {/* <SwiperSlide>
-          <div className='relative border border-[#ddd] group'>
-            <NavLink to='/dong-ho-nam' className='block border-b border-b-[#ddd]'>
-              <img
-                className='block'
-                src='http://mauweb.monamedia.net/donghohaitrieu/wp-content/uploads/2019/07/product-01.png'
-              />
-            </NavLink>
-            <div className='p-3 pb-4'>
-              <NavLink to='/dong-ho-nam' className='text-lg font-semibold text-[#3a3a3a] mt-1 mb-3'>
-                Classico
-              </NavLink>
-              <div className='mb-3 flex items-center justify-center'>
-                <span className='text-sm text-primary line-through font-thin mr-2'>700.000d</span>
-                <span className='text-sm text-primary font-black'>600.000d</span>
-              </div>
-              <Button onClick={() => alert(123)} primary custom='w-3/4 lg:w-2/4 mx-auto'>
-                Thêm vào giỏ
-              </Button>
-            </div>
-            <div className='absolute top-2 right-2 flex items-center justify-center border-2 border-slate-300 p-2 rounded-full text-slate-300 opacity-0 group-hover:opacity-100 hover:border-red-700 hover:bg-red-700 hover:text-white duration-300'>
-              <Tippy
-                offset={[0, 17]}
-                content='Thêm vào yêu thích'
-                theme='material'
-                animation='perspective'
-                duration={300}
-                placement='bottom'
-              >
-                <FontAwesomeIcon className='text-xl' icon={faHeart} />
-              </Tippy>
-            </div>
-          </div>
-        </SwiperSlide> */}
       </Swiper>
     </>
   )

@@ -86,11 +86,14 @@ const Galley: FC = () => {
                       )}
                       <span className='text-sm text-primary font-black'>{vietnameseCurrency(product.price)}</span>
                     </div>
-                    <Button onClick={() => alert(123)} primary custom='w-3/4 mx-auto'>
-                      Thêm vào giỏ
+                    <Button to={`/san-pham/${product.id}`} primary custom='w-3/4 mx-auto'>
+                      Chi tiết
                     </Button>
                   </div>
-                  <div className='absolute top-2 right-2 flex items-center justify-center border-2 border-slate-300 p-2 rounded-full text-slate-300 opacity-0 group-hover:opacity-100 hover:border-red-700 hover:bg-red-700 hover:text-white duration-300'>
+                  <div
+                    onClick={() => alert(123)}
+                    className='absolute top-2 right-2 flex items-center justify-center border-2 border-slate-300 p-2 rounded-full text-slate-300 opacity-0 group-hover:opacity-100 hover:border-red-700 hover:bg-red-700 hover:text-white duration-300'
+                  >
                     <Tippy
                       offset={[0, 17]}
                       content='Thêm vào yêu thích'

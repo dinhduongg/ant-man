@@ -10,13 +10,26 @@ import Product from '../MobileProductSearchResult/MobileProductSearchResult'
 import Button from '~/components/Button'
 import MobileSidebar from '../MobileSidebar'
 import Mobilecart from '../MobileCart'
+import { useQuery } from '@tanstack/react-query'
+import useAuth from '~/hooks/useAuth'
+import usePrivateAxios from '~/hooks/usePrivateAxios'
+import { productCart } from '~/shared/cart.interface'
 
 const Search: FC = () => {
   const [searchResult, setSearchResult] = useState([])
   const [showResult, setShowResult] = useState(true)
-  const [carts, setCarts] = useState<any>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isOpenCart, setIsOpenCart] = useState(false)
+
+  const { auth } = useAuth()
+  const privateAxios = usePrivateAxios()
+
+  const { data: carts } = useQuery({
+    queryKey: ['cart', auth?.username],
+    queryFn: () => privateAxios.get(`/carts/${auth?.username}`),
+    keepPreviousData: true,
+    enabled: auth?.username !== undefined
+  })
 
   return (
     <div className='border-t border-b border-header-border py-0 lg:py-5'>
@@ -76,17 +89,13 @@ const Search: FC = () => {
             <FontAwesomeIcon icon={faCartShopping} className='text-[30px]' onClick={() => setIsOpenCart(true)} />
             <ul className='absolute hidden lg:group-hover:block min-w-[260px] top-[150%] -right-5 rounded-md animate-[fadeIn_0.2s_ease-out] bg-white text-black text-base p-4 shadow-xl after:absolute after:h-0 after:w-0 after:border-x-[14px] after:border-x-transparent after:border-b-[16px] after:border-b-white after:-top-3 after:right-4 before:absolute before:h-10 before:w-1/4 before:-top-6 before:right-0 z-[9999]'>
               <div className='max-h-[50vh] overflow-auto'>
-                {!carts && carts.length > 0 ? (
+                {carts?.data.products.length === 0 ? (
                   <p>Chưa có sản phẩm trong giỏ hàng</p>
                 ) : (
                   <>
-                    <CartItem />
-                    <CartItem />
-                    <CartItem />
-                    <div className='text-center border-t border-t-primary border-b border-b-primary py-3'>
-                      <span className='text-primary font-semibold'>Tổng tiền: </span>
-                      <span>700000đ</span>
-                    </div>
+                    {carts?.data.products.map((product: productCart) => {
+                      return <CartItem key={product.id} product={product} />
+                    })}
                     <Button to='/gio-hang' full primary custom='my-2'>
                       Xem giỏ hàng
                     </Button>
