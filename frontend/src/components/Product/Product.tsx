@@ -24,18 +24,40 @@ const ProductsLap: FC<ProductProps> = ({ product }) => {
 
   const privateAxios = usePrivateAxios()
 
-  const { mutate, error } = useMutation({
+  const cart = useMutation({
     mutationFn: (body: productCart) => {
       return privateAxios.post(`/carts/create/${auth?.username}`, body)
     }
   })
 
-  const handleAddToCart = (data: any) => {
-    const product = { ...data, quantity: 1 } as productCart
+  const handleAddToCart = (data: IProduct) => {
+    const product = { ...data, quantity: 1 } as unknown as productCart
     if (Boolean(auth?.accessToken) && Boolean(product)) {
-      mutate(product, {
+      cart.mutate(product, {
         onSuccess: () => {
-          toast.success('Thêm vào giỏ hàng thành công')
+          toast.success('Đã thêm vào giỏ hàng')
+          queryClient.invalidateQueries({ queryKey: ['cart', auth?.username], exact: true })
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message)
+        }
+      })
+    } else {
+      alert('Bạn chưa đăng nhập! Đăng nhập ngay?')
+    }
+  }
+
+  const favorive = useMutation({
+    mutationFn: (body: IProduct) => {
+      return privateAxios.post(`/whist-list/create/${auth?.username}`, body)
+    }
+  })
+
+  const handleFavorite = (product: IProduct) => {
+    if (Boolean(auth?.accessToken) && Boolean(product)) {
+      favorive.mutate(product, {
+        onSuccess: () => {
+          toast.success('Đã thêm vào danh sách yêu thích')
           queryClient.invalidateQueries({ queryKey: ['cart', auth?.username], exact: true })
         },
         onError: (error: any) => {
@@ -65,7 +87,7 @@ const ProductsLap: FC<ProductProps> = ({ product }) => {
         </Button>
       </div>
       <div
-        onClick={() => alert(123)}
+        onClick={() => handleFavorite(product)}
         className='absolute top-2 right-2 flex items-center justify-center border-2 border-slate-300 p-2 rounded-full text-slate-300 opacity-0 group-hover:opacity-100 hover:border-red-700 hover:bg-red-700 hover:text-white duration-300'
       >
         <Tippy

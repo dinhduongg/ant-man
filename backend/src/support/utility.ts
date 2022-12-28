@@ -4,11 +4,14 @@ import { Builder } from "builder-pattern";
 
 export const makeFindOptions = <T>(pageable: Pageable): FindOptions<T> => {
     let orderBy = Builder<QueryOrderMap<T>>().build()
-    orderBy = Object.fromEntries([Object.values(pageable.sort)])
-    if (orderBy) {
-        for (const val in orderBy) {
-            orderBy[val] = orderBy[val] === 'a' ? QueryOrder.ASC : QueryOrder.DESC
+    if (pageable && Boolean(pageable.sort)) {
+        orderBy = Object.fromEntries([Object.values(pageable.sort)])
+        if (orderBy) {
+            for (const val in orderBy) {
+                orderBy[val] = orderBy[val] === 'a' ? QueryOrder.ASC : QueryOrder.DESC
+            }
         }
     }
-    return Builder<FindOptions<T>>().limit(+pageable.maxPage ?? 20).offset((+pageable.page ?? 0) * (+pageable.maxPage ?? 20)).orderBy(orderBy).build()
+    orderBy['createdAt'] = QueryOrder.ASC
+    return Builder<FindOptions<T>>().limit(+pageable?.maxPage ?? 20).offset((+pageable?.page ?? 0) * (+pageable?.maxPage ?? 20)).orderBy(orderBy).build()
 }

@@ -12,15 +12,18 @@ import { Autoplay, Navigation } from 'swiper'
 
 import { faChevronLeft, faChevronRight, faHeart } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Tippy from '@tippyjs/react'
 import queryString from 'query-string'
 import { NavLink } from 'react-router-dom'
 import Button from '~/components/Button'
+import useAuth from '~/hooks/useAuth'
+import usePrivateAxios from '~/hooks/usePrivateAxios'
 import { Product } from '~/shared/product.interface'
 import { publicAxios } from '~/utils/axiosClient'
 import { vietnameseCurrency } from '~/utils/utils'
 import './ProductSlider.css'
+import { toast } from 'react-toastify'
 
 interface Props {
   product?: Product
@@ -29,6 +32,9 @@ interface Props {
 
 const ProductSlider: FC<Props> = ({ product, action }) => {
   const swiperRef: any = useRef()
+  const { auth } = useAuth()
+  const privateAxios = usePrivateAxios()
+  const queryClient = useQueryClient()
 
   const [products, setProducts] = useState<Product[]>([])
 
@@ -41,7 +47,8 @@ const ProductSlider: FC<Props> = ({ product, action }) => {
           serialize: (params) => queryString.stringify(params)
         }
       }),
-    enabled: action !== undefined
+    enabled: action !== undefined,
+    onSuccess: () => {}
   })
 
   useEffect(() => {
@@ -51,6 +58,28 @@ const ProductSlider: FC<Props> = ({ product, action }) => {
   useEffect(() => {
     refetch()
   }, [product])
+
+  const favorive = useMutation({
+    mutationFn: (body: Product) => {
+      return privateAxios.post(`/whist-list/create/${auth?.username}`, body)
+    }
+  })
+
+  const handleFavorite = (product: Product) => {
+    if (Boolean(auth?.accessToken) && Boolean(product)) {
+      favorive.mutate(product, {
+        onSuccess: () => {
+          toast.success('Đã thêm vào danh sách yêu thích')
+          queryClient.invalidateQueries({ queryKey: ['cart', auth?.username], exact: true })
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message)
+        }
+      })
+    } else {
+      alert('Bạn chưa đăng nhập! Đăng nhập ngay?')
+    }
+  }
 
   return (
     <>
@@ -127,7 +156,7 @@ const ProductSlider: FC<Props> = ({ product, action }) => {
                     </Button>
                   </div>
                   <div
-                    onClick={() => alert(123)}
+                    onClick={() => handleFavorite(product)}
                     className='absolute top-2 right-2 flex items-center justify-center border-2 border-slate-300 p-2 rounded-full text-slate-300 opacity-0 group-hover:opacity-100 hover:border-red-700 hover:bg-red-700 hover:text-white duration-300'
                   >
                     <Tippy

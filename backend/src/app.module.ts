@@ -9,6 +9,7 @@ import { CartModule } from './module/cart.module';
 import { OrderModule } from './module/order.module';
 import { ReviewModule } from './module/review.module';
 import { AuthModule } from './module/auth.module';
+import { WhistListModule } from './module/whist-list.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -35,6 +36,7 @@ import configuration from './config/configuration';
     OrderModule,
     ReviewModule,
     AuthModule,
+    WhistListModule,
   ],
   controllers: [AppController],
   providers: [AppService],

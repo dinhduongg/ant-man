@@ -66,13 +66,7 @@ const ProductDetail: FC = () => {
   })
 
   const handleAddToCart = (product: IProduct) => {
-    const productCart = {
-      id: product.id,
-      image: product.image,
-      name: product.title,
-      price: product.price,
-      quantity: quantity
-    } as productCart
+    const productCart = { ...product, quantity: quantity } as unknown as productCart
 
     if (Boolean(auth?.accessToken) && Boolean(productCart)) {
       mutate(productCart, {

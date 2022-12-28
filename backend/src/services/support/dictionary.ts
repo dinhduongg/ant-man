@@ -3,6 +3,7 @@ import { Order } from "@/entities/order.entity"
 import { Review } from "@/entities/review.entity"
 import { AuthorityRole } from "@/entities/shared/enums"
 import { User } from "@/entities/user.entity"
+import { WhistList } from "@/entities/whist-list.entity"
 import { Builder } from "builder-pattern"
 
 export const generalUserTemplate = Builder(User)
@@ -63,4 +64,9 @@ export const generalReviewTemplate = Builder(Review)
     .productId('')
     .rating(0)
     .comment('')
+    .build()
+
+export const generalWishTemplate = Builder(WhistList)
+    .username('')
+    .products([])
     .build()
