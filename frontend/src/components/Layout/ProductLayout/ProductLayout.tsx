@@ -1,5 +1,5 @@
 import React, { cloneElement, FC, useEffect, useState } from 'react'
-import { createSearchParams, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { createSearchParams, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars, faCheck } from '@fortawesome/free-solid-svg-icons'
 import { motion } from 'framer-motion'

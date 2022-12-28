@@ -1,15 +1,16 @@
 import { useNavigate } from "react-router-dom"
 import { authState } from "~/context/AuthProvider"
 import useAuth from "./useAuth"
-import userApiServices from "~/api-services/userApiServices"
+import usePrivateAxios from "./usePrivateAxios"
 
 const useLogout = () => {
     const { setAuth } = useAuth()
+    const privateAxios = usePrivateAxios()
     const navigate = useNavigate()
 
     const logout = async () => {
         try {
-            await userApiServices.logout()
+            await privateAxios.post('/auth/logout')
             setAuth(authState)
             navigate('/')
         } catch (error) {

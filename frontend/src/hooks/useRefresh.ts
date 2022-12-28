@@ -1,14 +1,11 @@
 import useAuth from '~/hooks/useAuth'
-import userApiServices from '~/api-services/userApiServices';
 import { useCookies } from 'react-cookie'
 
 const useRefresh = () => {
-    const [cookies, setCookie] = useCookies()
+    const [cookies] = useCookies()
     const { setAuth } = useAuth()
 
     const refresh = async () => {
-        const response = await userApiServices.refreshToken()
-
         setAuth((prev: any) => ({
             ...prev,
             accessToken: cookies.accessToken,

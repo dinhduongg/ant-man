@@ -100,7 +100,7 @@ export class CartService {
 
         this.repository.persist(userCart)
       } else {
-        product.quantity -= 1
+        product.quantity = product.quantity === 1 ? 1 : product.quantity - 1
         product.totalMoney = (product.quantity * product.price)
 
         userCart.totalPrice = userCart.products.reduce((sum, item) => sum + item.totalMoney, 0)
