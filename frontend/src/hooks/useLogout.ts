@@ -10,7 +10,7 @@ const useLogout = () => {
 
     const logout = async () => {
         try {
-            await privateAxios.post('/auth/logout')
+            await privateAxios.get('/auth/logout')
             setAuth(authState)
             navigate('/')
         } catch (error) {

@@ -13,6 +13,7 @@ import Checkout from '~/pages/Checkout'
 import { ParallaxLayout, ProductLayout, SliderLayout } from '~/components/Layout'
 import Missing from '~/pages/Missing'
 import React from 'react'
+import Account from '~/pages/Account'
 
 interface route {
   path: string
@@ -37,6 +38,7 @@ const privateUserRoutes: route[] = [
   { path: '/yeu-thich', component: WhistList },
   { path: '/gio-hang', component: Cart },
   { path: '/thanh-toan', component: Checkout },
+  { path: '/thong-tin', component: Account },
 ]
 
 const managerRoute: route[] = []

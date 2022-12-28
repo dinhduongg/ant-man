@@ -1,8 +1,10 @@
+import classNames from 'classnames'
 import { FC, useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import useAuth from '~/hooks/useAuth'
 
 import useLogout from '~/hooks/useLogout'
+import { AuthorityRole } from '~/shared/enums'
 
 const Navigation: FC = () => {
   const location = useLocation()
@@ -106,6 +108,18 @@ const Navigation: FC = () => {
       ) : (
         <>
           {/* logout btn */}
+
+          <NavLink
+            to='/thong-tin'
+            className={classNames(
+              'relative cursor-pointer hover:text-primary hover:after:bg-primary duration-300 after:absolute after:w-full after:h-[1px] after:top-full after:right-0 after:left-0 after:duration-300',
+              {
+                'text-primary after:bg-primary': Boolean(location.pathname.includes('/thong-tin'))
+              }
+            )}
+          >
+            <span className='active'>{auth?.username}</span>
+          </NavLink>
           <li
             onClick={handleLogout}
             className='relative cursor-pointer hover:text-primary hover:after:bg-primary duration-300 after:absolute after:w-full after:h-[1px] after:top-full after:right-0 after:left-0 after:duration-300'
@@ -113,6 +127,14 @@ const Navigation: FC = () => {
             <span className='active'>đăng xuất</span>
           </li>
         </>
+      )}
+      {auth && auth?.roles?.includes(AuthorityRole.ADMIN) && (
+        <NavLink
+          to='/admin'
+          className='relative cursor-pointer hover:text-primary hover:after:bg-primary duration-300 after:absolute after:w-full after:h-[1px] after:top-full after:right-0 after:left-0 after:duration-300'
+        >
+          <span className='active'>Admin</span>
+        </NavLink>
       )}
     </ul>
   )
